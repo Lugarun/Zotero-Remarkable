@@ -23,7 +23,11 @@ def rmapi(cmd):
     return subprocess.check_output(f"{RMAPI_BIN} {cmd}", shell=True, stderr=subprocess.STDOUT).decode("utf-8").split('\n')[0:-1]
 
 def upload_file(file):
-    path = os.path.join(ZOTERO_FOLDER, f"{file}.pdf")
+    full_file_name = [os.path.basename(pfile) for pfile in os.listdir(ZOTERO_FOLDER) if os.path.basename(pfile).startswith(file)]
+    if len(full_file_name) == 0:
+      path = os.path.join(ZOTERO_FOLDER, f"{file}.pdf")
+    else:
+      path = os.path.join(ZOTERO_FOLDER, full_file_name[0])
     rmapi(f'put "{path}" "{RM_FOLDER}"')
 
 def download_file(file):
@@ -46,7 +50,7 @@ def delete_file(file):
 
 def get_files():
     files_on_remarkable = set([f.split('\t')[-1] for f in rmapi(f"ls {RM_FOLDER}")])
-    files_on_local = set([os.path.splitext(os.path.basename(f))[0] for f in os.listdir(ZOTERO_FOLDER) if f.endswith(".pdf")])
+    files_on_local = set([os.path.splitext(os.path.basename(f))[0] for f in os.listdir(ZOTERO_FOLDER) if (f.endswith(".pdf") or f.endswith(".epub"))])
     return files_on_remarkable, files_on_local
 
 def process_files(delete=False, download=False):
